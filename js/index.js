@@ -297,18 +297,24 @@ function switchMedia(thumb) {
 let lightboxImages = [];
 let currentLightboxIndex = 0;
 
-function openLightbox(imgSrc) {
+function openLightbox(imgSrc, context = 'case') {
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
-  
-  // Get all images from the media gallery
-  const mediaThumbs = document.querySelectorAll('.case-media-thumb[data-type="image"]');
-  lightboxImages = Array.from(mediaThumbs).map(thumb => thumb.getAttribute('data-src'));
-  
+
+  if (context === 'featured') {
+    // Get all images from featured case gallery
+    const featuredThumbs = document.querySelectorAll('.featured-thumb');
+    lightboxImages = Array.from(featuredThumbs).map(thumb => thumb.getAttribute('src'));
+  } else {
+    // Get all images from the media gallery
+    const mediaThumbs = document.querySelectorAll('.case-media-thumb[data-type="image"]');
+    lightboxImages = Array.from(mediaThumbs).map(thumb => thumb.getAttribute('data-src'));
+  }
+
   // Find current index
   currentLightboxIndex = lightboxImages.indexOf(imgSrc);
   if (currentLightboxIndex === -1) currentLightboxIndex = 0;
-  
+
   lightboxImg.src = imgSrc;
   lightbox.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -322,13 +328,13 @@ function closeLightbox() {
 
 function navigateLightbox(direction) {
   currentLightboxIndex += direction;
-  
+
   if (currentLightboxIndex < 0) {
     currentLightboxIndex = lightboxImages.length - 1;
   } else if (currentLightboxIndex >= lightboxImages.length) {
     currentLightboxIndex = 0;
   }
-  
+
   const lightboxImg = document.getElementById('lightboxImg');
   lightboxImg.src = lightboxImages[currentLightboxIndex];
 }
@@ -336,27 +342,36 @@ function navigateLightbox(direction) {
 // Initialize lightbox
 document.addEventListener('DOMContentLoaded', function() {
   const lightbox = document.getElementById('lightbox');
-  
+
   // Close on background click
   lightbox.addEventListener('click', function(e) {
     if (e.target === lightbox) {
       closeLightbox();
     }
   });
-  
+
   // Close on Escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && lightbox.classList.contains('active')) {
       closeLightbox();
     }
   });
-  
-  // Add click handler to main image only
+
+  // Add click handler to main image (case media)
   const mediaImg = document.querySelector('.case-media-img');
   if (mediaImg) {
     mediaImg.addEventListener('click', function(e) {
       e.stopPropagation();
-      openLightbox(this.src);
+      openLightbox(this.src, 'case');
     });
   }
+
+  // Add click handler to featured case photos
+  const featuredPhotos = document.querySelectorAll('.featured-photo-img');
+  featuredPhotos.forEach(photo => {
+    photo.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openLightbox(this.src, 'featured');
+    });
+  });
 });
